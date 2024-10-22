@@ -11,7 +11,14 @@ interface FormCadastroProps {
 
 
 const CadastroPessoal = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormCadastroProps>()
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormCadastroProps>()
+  const senha = watch("senha")
+
+  const validaSenha = {
+    obrigatorio: (val: string) => !!val || "Por favor insira sua senha novamente",
+    tamanhoMinimo: (val: string) => val.length >= 6 || "A senha deve ter no minimo 6 caractéres",
+    senhaIguais: (val: string) => val === senha || "As senhas não conferem",
+  }
 
   const onFormSubmit = (date: FormCadastroProps) => {
     console.log(date)
@@ -20,10 +27,8 @@ const CadastroPessoal = () => {
   const validateEmail = (value: string) => {
     const validateRegex = /^\w+@alura\.com\.br$/
     if (!validateRegex.test(value)) {
-      console.error("O email inserido não é válido")
       return "O email inserido não é válido"
     }
-
     return true
   }
 
@@ -103,6 +108,7 @@ const CadastroPessoal = () => {
             $error={!!errors.senhaVerificada}
             {...register("senhaVerificada", {
               required: "O campo senha é obrigatório",
+              validate: validaSenha,
             })}
           />
           {errors.senhaVerificada && <ErrorMessage>{errors.senhaVerificada.message}</ErrorMessage>}
