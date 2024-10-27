@@ -1,5 +1,7 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button, Label, Fieldset, Input, Form, Titulo, ErrorMessage } from "../../components";
+import InputMusk from "../../components/InputMask";
+import { useEffect } from "react";
 
 interface FormCadastroProps {
   nome: string;
@@ -11,8 +13,30 @@ interface FormCadastroProps {
 
 
 const CadastroPessoal = () => {
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormCadastroProps>()
+  const { register,
+    handleSubmit,
+    formState: { errors, isSubmitSuccessful },
+    watch,
+    control,
+    reset
+  } = useForm<FormCadastroProps>({
+    mode: "all",
+    defaultValues: {
+      email: "",
+      nome: "",
+      senha: "",
+      senhaVerificada: "",
+      telefone: "",
+    }
+  })
   const senha = watch("senha")
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+      console.log("Salvou")
+    }
+  }, [reset, isSubmitSuccessful])
 
   const validaSenha = {
     obrigatorio: (val: string) => !!val || "Por favor insira sua senha novamente",
@@ -67,21 +91,27 @@ const CadastroPessoal = () => {
         </Fieldset>
         <Fieldset>
           <Label>Telefone</Label>
-          <Input
-            id="campo-telefone"
-            type="text"
-            placeholder="Ex: (DDD) XXXXX-XXXX"
-            $error={!!errors.telefone}
-            {...register("telefone", {
-              required: "O campo telefone é obrigatório", pattern: {
-                value: /^\(\d{2}\)\d{5}-\d{4}$/,
-                message: "O formato do telefone deve ser (XX)XXXX-XXXX"
+          <Controller
+            name="telefone"
+            control={control}
+            rules={{
+              required: "O campo telefone é obrigatório",
+              pattern: {
+                value: /^\(\d{2}\) \d{5}-\d{4}$/,
+                message: "O formato do telefone deve ser (XX) XXXXX-XXXX"
               }
-            })}
-          />
-          {errors.telefone && <ErrorMessage>{errors.telefone.message}</ErrorMessage>}
+            }}            
+            render={({ field }) => (
+              <InputMusk
+                placeholder="(XX) XXXXX-XXXX"
+                mask="(99) 99999-9999"
+                $error={!!errors.telefone}
+                {...field}
+              />
+            )}
+            />
+            {errors.telefone && <ErrorMessage>{errors.telefone.message}</ErrorMessage>}
         </Fieldset>
-
         <Fieldset>
           <Label htmlFor="campo-senha">Crie uma senha</Label>
           <Input
